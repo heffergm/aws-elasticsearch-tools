@@ -54,3 +54,20 @@ INFO     13:25:33 Sending restore request for index(es): destination,events, fro
 INFO     13:25:34 Restore index destination,events response status code: 200
 INFO     13:25:34 Done.
 ```
+
+Attempt to restore an index that doesn't exist in the snapshot repository:
+
+```
+[ec2-user@ip-10-0-2-151 aws-elasticsearch-tools]$ ./aws-es-restore.py --url https://vpc-tf-production-elasticsearch-otgkq7aqgi5k3oysldha6yledu.us-east-1.es.amazonaws.com --snapshot-name 2018-08-14t23-13-35.676c6bfd-2660-4116-bc3a-f5294ad4f56d --index burgers --restore
+INFO     13:37:01 Cluster name: 065528155791:tf-production-elasticsearch
+INFO     13:37:01 Cluster version: 6.2.3
+WARNING  13:37:01 WARNING: restoring an index necessitates the deletion of any existing index with the same name. Proceed? (any key to continue, CTRL-C to abort)
+
+INFO     13:37:02 Sending delete request for index(es): burgers.
+INFO     13:37:02 Delete index: burgers, response status code: 404
+WARNING  13:37:02 Sent delete index requests and received response code: 404
+WARNING  13:37:02 Continuing.
+INFO     13:37:02 Sending restore request for index(es): burgers from snapshot: 2018-08-14t23-13-35.676c6bfd-2660-4116-bc3a-f5294ad4f56d.
+ERROR    13:37:02 Restore index(es): burgers. Response status code: 404
+INFO     13:37:02 Done.
+```
