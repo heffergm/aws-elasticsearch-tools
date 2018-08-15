@@ -163,13 +163,13 @@ if options.restore:
 
     logger.info('Sending delete request for index %s.', options.index)
     delete_resp = delete_index(options.url, options.index)
-    logger.info('Delete index %s response status code: %s', options.index, delete_resp)
+    logger.info('Delete index: %s, response status code: %s', options.index, delete_resp)
 
     if delete_resp == 200:
         logger.info('Sleeping to allow index deletion before continuing.')
         time.sleep(60)
 
-    logger.info('Sending restore request for index %s from snapshot %s.',
+    logger.info('Sending restore request for index: %s, from snapshot: %s.',
                 options.index, options.snapshot_name)
     restore_resp = restore_index(options.url, options.snapshot_name, options.index)
     logger.info('Restore index %s response status code: %s', options.index, restore_resp)
