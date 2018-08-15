@@ -173,3 +173,4 @@ if options.restore:
                 options.index, options.snapshot_name)
     restore_resp = restore_index(options.url, options.snapshot_name, options.index)
     logger.info('Restore index %s response status code: %s', options.index, restore_resp)
+    logger.info('Done.')
