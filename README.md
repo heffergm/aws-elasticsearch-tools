@@ -15,7 +15,7 @@ and the indexes stored in them.
 ### Examples
 
 ```
-[ec2-user@ip-10-0-2-151 aws-elasticsearch-tools]$ ./aws-es-restore.py --list-snapshots -u https://vpc-tf-production-elasticsearch-otgkq7aqgi5k3oysldha6yledu.us-east-1.es.amazonaws.com
+[ec2-user@ip-10-0-2-151 aws-elasticsearch-tools]$ ./aws-es-restore.py --list-snapshots --url https://vpc-tf-production-elasticsearch-otgkq7aqgi5k3oysldha6yledu.us-east-1.es.amazonaws.com
 
 Elasticsearch cluster name: 065528155791:tf-production-elasticsearch, version: 6.2.3
 
@@ -37,7 +37,7 @@ Listing up to the latest five snapshots:
 ```
 
 ```
-[ec2-user@ip-10-0-2-151 aws-elasticsearch-tools]$ ./aws-es-restore.py -u https://vpc-tf-production-elasticsearch-otgkq7aqgi5k3oysldha6yledu.us-east-1.es.amazonaws.com --snapshot-name 2018-08-14t23-13-35.676c6bfd-2660-4116-bc3a-f5294ad4f56d --index destination,events --restore
+[ec2-user@ip-10-0-2-151 aws-elasticsearch-tools]$ ./aws-es-restore.py --url https://vpc-tf-production-elasticsearch-otgkq7aqgi5k3oysldha6yledu.us-east-1.es.amazonaws.com --snapshot-name 2018-08-14t23-13-35.676c6bfd-2660-4116-bc3a-f5294ad4f56d --index destination,events --restore
 
 Elasticsearch cluster name: 065528155791:tf-production-elasticsearch, version: 6.2.3
 
