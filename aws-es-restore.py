@@ -11,10 +11,12 @@ from urllib.request import urlopen
 
 from colorlog import ColoredFormatter
 
+
 # methods
 def get_log_handler(color):
     formatter = ColoredFormatter(
-        "%(log_color)s%(levelname)-8s%(reset)s %(asctime)s %(white)s%(message)s",
+        "%(log_color)s%(levelname)-8s%(reset)s "
+        "%(asctime)s %(white)s%(message)s",
         datefmt='%H:%M:%S',
         reset=True,
         log_colors={
@@ -24,8 +26,8 @@ def get_log_handler(color):
             'ERROR':    'red',
             'CRITICAL': 'red',
         }
-    ) if color else logging.Formatter("%(levelname)-8s %(asctime)s %(message)s",
-                                      datefmt="%H:%M:%S")
+    ) if color else logging.Formatter("%(levelname)-8s %(asctime)s "
+                                      "%(message)s", datefmt="%H:%M:%S")
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     return handler
@@ -90,7 +92,8 @@ def restore_index(url, snapshot, index, repository):
 
     headers = {'Content-type': 'application/json'}
     try:
-        r = requests.post(url + '/_snapshot/' + repository + '/' + snapshot + '/_restore',
+        r = requests.post(url + '/_snapshot/' +
+                          repository + '/' + snapshot + '/_restore',
                           data=json.dumps(postdata), headers=headers)
     except Exception as e:
         logger.error('Error: %s, response code: ', e, r.status_code)
@@ -101,30 +104,33 @@ def restore_index(url, snapshot, index, repository):
 # options parser
 parser = OptionParser()
 parser.add_option('--url', type='string',
-                  help='Required. Endpoint url of the ES domain you wish to interact with.'
-                  'Format: https://some.url')
+                  help='Required. Endpoint url of the ES domain you'
+                  'wish to interact with. Format: https://some.url')
 
-parser.add_option('--list-snapshots', dest='snaplist', action='store_true', default=False,
-                  help='Standalone option, use to list available snapshots and indexes.')
+parser.add_option('--list-snapshots', dest='snaplist', action='store_true',
+                  default=False, help='Standalone option, use to list'
+                  'available snapshots and indexes.')
 
-parser.add_option('--restore', dest='restore', action='store_true', default=False,
-                  help='Use with --snapshot [snapshot] and --index [index] to select'
-                  'a snapshot to restore.')
+parser.add_option('--restore', dest='restore', action='store_true',
+                  default=False, help='Use with --snapshot [snapshot]'
+                  'and --index [index] to select a snapshot to restore.')
 
 parser.add_option('--snapshot-name', type='string',
                   help='Use with --restore to select a snapshot to restore.')
 
-parser.add_option('--no-color', dest='color', action='store_false', default=True,
-                  help='Disable color logging.')
+parser.add_option('--no-color', dest='color', action='store_false',
+                  default=True, help='Disable color logging.')
 
-parser.add_option('--snapshot-repository', type='string', default='cs-automated',
-                  help='Optional: use with --restore to select a snapshot repository '
+parser.add_option('--snapshot-repository', type='string',
+                  default='cs-automated', help='Optional: use'
+                  'with --restore to select a snapshot repository '
                   'other than the default of cs-automated.')
 
 parser.add_option('--index', type='string',
-                  help='Use with --restore and --snapshot to select an index to restore.'
-                  'Note that index will first be deleted from the running cluster.'
-                  'If "all" is used, all indexes will be deleted/restored.')
+                  help='Use with --restore and --snapshot to select'
+                  'an index to restore. Note that index will first be'
+                  'deleted from the running cluster. If "all" is used, '
+                  'all indexes will be deleted/restored.')
 
 options, args = parser.parse_args()
 logger = setup_default_logger(color=options.color)
@@ -136,7 +142,8 @@ if not options.url:
     sys.exit(1)
 
 if not options.url.startswith("http"):
-    logger.error("Error: --url [url], url must be in the format https://some.url.")
+    logger.error("Error: --url [url], url must be in the format "
+                 "https://some.url.")
     parser.print_help()
     sys.exit(1)
 
@@ -166,7 +173,8 @@ if options.snaplist:
             for i in snaps['snapshots']:
                 if s == i['snapshot']:
                     indices = ", ".join(i['indices'])
-                    logger.info('\n\tSnapshot: %s\n\tIndexes: %s\n', s, ", ".join(i['indices']))
+                    logger.info('\n\tSnapshot: %s\n\tIndexes: %s\n',
+                                s, ", ".join(i['indices']))
     else:
         logger.error('Successfully queries the snapshot responsitory, '
                      'but no snapshots were found!')
@@ -180,13 +188,15 @@ if options.restore:
         parser.print_help()
         sys.exit(1)
 
-    logger.warning('WARNING: restoring an index necessitates the deletion of any existing '
-                   'index with the same name. Proceed? (any key to continue, CTRL-C to abort)')
+    logger.warning('WARNING: restoring an index necessitates the deletion '
+                   'of any existing index with the same name. Proceed? '
+                   '(any key to continue, CTRL-C to abort)')
     proceed = input()
 
     logger.info('Sending delete request for index(es): %s.', options.index)
     delete_resp = delete_index(options.url, options.index)
-    logger.info('Delete index: %s, response status code: %s', options.index, delete_resp)
+    logger.info('Delete index: %s, response status code: %s',
+                options.index, delete_resp)
 
     if delete_resp == 200:
         logger.info('Sleeping to allow index deletion before continuing.')
@@ -201,8 +211,10 @@ if options.restore:
                                  options.index, options.snapshot_repository)
 
     if restore_resp == 200:
-        logger.info('Restore index(es): %s. Response status code: %s', options.index, restore_resp)
+        logger.info('Restore index(es): %s. Response status code: %s',
+                    options.index, restore_resp)
     else:
-        logger.error('Restore index(es): %s. Response status code: %s', options.index, restore_resp)
+        logger.error('Restore index(es): %s. Response status code: %s',
+                     options.index, restore_resp)
 
     logger.info('Done.')
