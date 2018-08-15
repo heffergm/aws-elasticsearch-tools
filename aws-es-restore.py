@@ -164,8 +164,9 @@ if options.restore:
     delete_resp = delete_index(options.url, options.index)
     logger.info('Delete index %s response status code: %s', options.index, delete_resp)
 
-    logger.info('Sleeping to allow index deletion before continuing.')
-    time.sleep(60)
+    if delete_resp == 200:
+        logger.info('Sleeping to allow index deletion before continuing.')
+        time.sleep(60)
 
     logger.info('Sending restore request for index %s from snapshot %s.',
                 options.index, options.snapshot_name)
