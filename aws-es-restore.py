@@ -169,5 +169,5 @@ if options.restore:
 
     logger.info('Sending restore request for index %s from snapshot %s.',
                 options.index, options.snapshot_name)
-    restore_rep = restore_index(options.url, options.snapshot_name, options.index)
+    restore_resp = restore_index(options.url, options.snapshot_name, options.index)
     logger.info('Restore index %s response status code: %s', options.index, restore_resp)
