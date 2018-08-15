@@ -104,7 +104,8 @@ parser.add_option('--snapshot-name', type='string',
                   help='Use with --restore to select a snapshot to restore.')
 
 parser.add_option('--snapshot-repository', type='string', default='cs-automated',
-                  help='Optional: use with --restore to select a snapshot repository.')
+                  help='Optional: use with --restore to select a snapshot repository '
+                  'other than the default of cs-automated.')
 
 parser.add_option('--index', type='string',
                   help='Use with --restore and --snapshot to select an index to restore.'
