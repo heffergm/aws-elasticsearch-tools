@@ -3,12 +3,12 @@
 import sys
 import time
 import json
-import requests
 import logging
 import logging.config
 from optparse import OptionParser
-from urllib.request import urlopen
 
+import requests
+from urllib.request import urlopen
 from colorlog import ColoredFormatter
 
 
