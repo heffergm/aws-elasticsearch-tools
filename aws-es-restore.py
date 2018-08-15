@@ -77,7 +77,7 @@ def restore_index(url, snapshot, index):
 
     try:
         r = requests.post(url + '/_snapshot/cs-automated/' + snapshot + '/_restore',
-                          data={'indices': index})
+                          data=postdata)
     except Exception as e:
         logger.error('Error: %s, response code: ', e, r.status_code)
 
@@ -164,9 +164,8 @@ if options.restore:
     delete_resp = delete_index(options.url, options.index)
     logger.info('Delete index %s response status code: %s', options.index, delete_resp)
 
-    if delete_resp == 200:
-        logger.info('Sleeping to allow index deletion before continuing.')
-        time.sleep(60)
+    logger.info('Sleeping to allow index deletion before continuing.')
+    time.sleep(60)
 
     logger.info('Sending restore request for index %s from snapshot %s.',
                 options.index, options.snapshot_name)
