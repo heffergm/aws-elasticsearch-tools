@@ -75,9 +75,10 @@ def restore_index(url, snapshot, index):
     else:
         postdata = {'indices': index}
 
+    headers = {'Content-type': 'application/json'}
     try:
         r = requests.post(url + '/_snapshot/cs-automated/' + snapshot + '/_restore',
-                          data=json.dumps(postdata))
+                          data=json.dumps(postdata), headers=headers)
     except Exception as e:
         logger.error('Error: %s, response code: ', e, r.status_code)
 
