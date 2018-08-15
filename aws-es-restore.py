@@ -183,7 +183,7 @@ if options.restore:
                    'index with the same name. Proceed? (any key to continue, CTRL-C to abort)')
     proceed = input()
 
-    logger.info('Sending delete request for index(es) %s.', options.index)
+    logger.info('Sending delete request for index(es): %s.', options.index)
     delete_resp = delete_index(options.url, options.index)
     logger.info('Delete index: %s, response status code: %s', options.index, delete_resp)
 
@@ -191,9 +191,9 @@ if options.restore:
         logger.info('Sleeping to allow index deletion before continuing.')
         time.sleep(60)
 
-    logger.info('Sending restore request for index(es): %s, from snapshot: %s.',
+    logger.info('Sending restore request for index(es): %s from snapshot: %s.',
                 options.index, options.snapshot_name)
     restore_resp = restore_index(options.url, options.snapshot_name,
                                  options.index, options.snapshot_repository)
-    logger.info('Restore index(es): %s, response status code: %s', options.index, restore_resp)
+    logger.info('Restore index(es): %s. Response status code: %s', options.index, restore_resp)
     logger.info('Done.')
