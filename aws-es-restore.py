@@ -191,8 +191,8 @@ if options.restore:
         logger.info('Sleeping to allow index deletion before continuing.')
         time.sleep(60)
     else:
-        logger.warn('Sent delete index requests and received response code: %s', delete_resp)
-        logger.warn('Continuing.')
+        logger.warning('Sent delete index requests and received response code: %s', delete_resp)
+        logger.warning('Continuing.')
 
     logger.info('Sending restore request for index(es): %s from snapshot: %s.',
                 options.index, options.snapshot_name)
