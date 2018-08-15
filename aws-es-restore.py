@@ -49,7 +49,7 @@ def setup_default_logger(color=True):
 
 def test_connection(url):
     try:
-        r = urlopen(url).read()
+        r = urlopen(url, timeout=5).read()
     except Exception as e:
         logger.error('%s', e)
         sys.exit(1)
@@ -141,7 +141,13 @@ if not options.url.startswith("http"):
     sys.exit(1)
 
 # verify we can connect
-testconn = test_connection(options.url)
+try:
+    testconn = test_connection(options.url)
+except Exception as e:
+    logger.error('Failure connecting to url: %s', options.url)
+    logger.error('Exception: %s', e)
+    sys.exit(1)
+
 logger.info('Cluster name: %s', testconn['cluster_name'])
 logger.info('Cluster version: %s', testconn['version']['number'])
 
