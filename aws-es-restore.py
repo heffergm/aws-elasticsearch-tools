@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 
 import sys
+
+# require python 2.7
+if sys.version_info[0] != 2 or sys.version_info[1] < 7:
+    print("This script requires Python version 2.7")
+    sys.exit(1)
+
 import time
 import json
 import urllib2
