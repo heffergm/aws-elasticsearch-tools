@@ -71,3 +71,10 @@ INFO     13:37:02 Sending restore request for index(es): burgers from snapshot: 
 ERROR    13:37:02 Restore index(es): burgers. Response status code: 404
 INFO     13:37:02 Done.
 ```
+
+Example failure at initial connection test:
+
+```
+grant: ~/repos/heffergm/aws-elasticsearch-tools (master *)$ ./aws-es-restore.py --url https://blah.com
+ERROR    12:27:10 <urlopen error timed out>
+```
