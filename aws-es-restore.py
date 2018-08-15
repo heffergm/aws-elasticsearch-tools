@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import os
 import sys
 import time
 import json
@@ -8,7 +7,6 @@ import urllib2
 import requests
 import logging
 import logging.config
-import datetime
 from optparse import OptionParser
 
 # logger
@@ -23,8 +21,8 @@ logging.config.dictConfig({
     },
     'handlers': {
         'default': {
-            'level':'INFO',
-            'class':'logging.StreamHandler',
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
@@ -35,6 +33,7 @@ logging.config.dictConfig({
         }
     }
 })
+
 
 # methods
 def test_connection(url):
@@ -47,15 +46,17 @@ def test_connection(url):
     parsed = json.loads(r)
     return parsed
 
-def list_snapshots(url):
+
+def list_snapshots(url, repository):
     try:
-        r = urllib2.urlopen(url + '/_snapshot/cs-automated/_all').read()
+        r = urllib2.urlopen(url + '/_snapshot/' + repository + '/_all').read()
     except Exception as e:
         logger.error('%s', e)
         sys.exit(1)
 
     parsed = json.loads(r)
     return parsed
+
 
 def delete_index(url, index):
     if index == 'all':
@@ -69,7 +70,8 @@ def delete_index(url, index):
 
     return r.status_code
 
-def restore_index(url, snapshot, index):
+
+def restore_index(url, snapshot, index, repository):
     if index == 'all':
         postdata = {}
     else:
@@ -77,30 +79,34 @@ def restore_index(url, snapshot, index):
 
     headers = {'Content-type': 'application/json'}
     try:
-        r = requests.post(url + '/_snapshot/cs-automated/' + snapshot + '/_restore',
+        r = requests.post(url + '/_snapshot/' + repository + '/' + snapshot + '/_restore',
                           data=json.dumps(postdata), headers=headers)
     except Exception as e:
         logger.error('Error: %s, response code: ', e, r.status_code)
 
     return r.status_code
 
+
 # options parser
 parser = OptionParser()
-parser.add_option('-u', '--url', type='string',
+parser.add_option('--url', type='string',
                   help='Required. Endpoint url of the ES domain you wish to interact with.'
                   'Format: https://some.url')
 
-parser.add_option('-l', '--list-snapshots', dest='snaplist', action='store_true', default=False,
+parser.add_option('--list-snapshots', dest='snaplist', action='store_true', default=False,
                   help='Standalone option, use to list available snapshots and indexes.')
 
-parser.add_option('-r', '--restore', dest='restore', action='store_true', default=False,
+parser.add_option('--restore', dest='restore', action='store_true', default=False,
                   help='Use with --snapshot [snapshot] and --index [index] to select'
                   'a snapshot to restore.')
 
-parser.add_option('-s', '--snapshot-name', type='string',
+parser.add_option('--snapshot-name', type='string',
                   help='Use with --restore to select a snapshot to restore.')
 
-parser.add_option('-i', '--index', type='string',
+parser.add_option('--snapshot-repository', type='string', default='cs-automated',
+                  help='Optional: use with --restore to select a snapshot repository.')
+
+parser.add_option('--index', type='string',
                   help='Use with --restore and --snapshot to select an index to restore.'
                   'Note that index will first be deleted from the running cluster.'
                   'If "all" is used, all indexes will be deleted/restored.')
@@ -126,7 +132,7 @@ logger.info('\nElasticsearch cluster name: %s, version: %s\n',
 # get snapshots and indexes
 if options.snaplist:
     logger.info('Listing up to the latest five snapshots:')
-    snaps = list_snapshots(options.url)
+    snaps = list_snapshots(options.url, options.snapshot_repository)
 
     count = 0
     for i in snaps['snapshots']:
@@ -171,6 +177,7 @@ if options.restore:
 
     logger.info('Sending restore request for index: %s, from snapshot: %s.',
                 options.index, options.snapshot_name)
-    restore_resp = restore_index(options.url, options.snapshot_name, options.index)
+    restore_resp = restore_index(options.url, options.snapshot_name,
+                                 options.index, options.snapshot_repository)
     logger.info('Restore index %s response status code: %s', options.index, restore_resp)
     logger.info('Done.')
