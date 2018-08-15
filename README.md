@@ -5,9 +5,12 @@
 This is a tool for listing available snapshots made via the daily snapshot utility available
 for hosted Elasticsearch domains.
 
-### Usage
+## Requirements
 
+* python3
 * `pip3 install -r requirements.txt`
+
+### Usage
 
 * `aws-es-restore.py --list-snapshots --url [url]`: lists up to the last five available snapshots
 and the indexes stored in them.
