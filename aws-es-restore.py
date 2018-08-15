@@ -56,7 +56,12 @@ def test_connection(url):
         logger.error('%s', e)
         sys.exit(1)
 
-    parsed = json.loads(r)
+    try:
+        parsed = json.loads(r)
+    except Exception as e:
+        logger.error('Parsing response to JSON failed: %s', e)
+        sys.exit(1)
+
     return parsed
 
 
@@ -147,8 +152,12 @@ if not options.url.startswith("http"):
     parser.print_help()
     sys.exit(1)
 
-# verify we can connect
+# verify we can connect and get valid response
 testconn = test_connection(options.url)
+
+if 'cluster_name' not in testconn:
+    logger.error('No cluster name detected. Please verify your endpoint!')
+    sys.exit(1)
 
 logger.info('Cluster name: %s', testconn['cluster_name'])
 logger.info('Cluster version: %s', testconn['version']['number'])
