@@ -190,10 +190,18 @@ if options.restore:
     if delete_resp == 200:
         logger.info('Sleeping to allow index deletion before continuing.')
         time.sleep(60)
+    else:
+        logger.warn('Sent delete index requests and received response code: %s', delete_resp)
+        logger.warn('Continuing.')
 
     logger.info('Sending restore request for index(es): %s from snapshot: %s.',
                 options.index, options.snapshot_name)
     restore_resp = restore_index(options.url, options.snapshot_name,
                                  options.index, options.snapshot_repository)
-    logger.info('Restore index(es): %s. Response status code: %s', options.index, restore_resp)
+
+    if restore_resp == 200:
+        logger.info('Restore index(es): %s. Response status code: %s', options.index, restore_resp)
+    else:
+        logger.error('Restore index(es): %s. Response status code: %s', options.index, restore_resp)
+
     logger.info('Done.')
