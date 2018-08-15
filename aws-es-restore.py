@@ -141,12 +141,7 @@ if not options.url.startswith("http"):
     sys.exit(1)
 
 # verify we can connect
-try:
-    testconn = test_connection(options.url)
-except Exception as e:
-    logger.error('Failure connecting to url: %s', options.url)
-    logger.error('Exception: %s', e)
-    sys.exit(1)
+testconn = test_connection(options.url)
 
 logger.info('Cluster name: %s', testconn['cluster_name'])
 logger.info('Cluster version: %s', testconn['version']['number'])
