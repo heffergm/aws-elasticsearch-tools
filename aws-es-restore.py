@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-# Examples:
-#     aws-es-restore.py --list-snapshots --url [url]
-#     aws-es-restore.py --restore --snapshot [snapshot] --index [index_name] --url [url]
-
 import os
 import sys
 import time
@@ -15,6 +11,7 @@ import logging.config
 import datetime
 from optparse import OptionParser
 
+# logger
 logger = logging.getLogger(__name__)
 logging.config.dictConfig({
     'version': 1,
@@ -39,6 +36,7 @@ logging.config.dictConfig({
     }
 })
 
+# methods
 def test_connection(url):
     try:
         r = urllib2.urlopen(url).read()
@@ -60,6 +58,9 @@ def list_snapshots(url):
     return parsed
 
 def delete_index(url, index):
+    if index == 'all':
+        index = '_all'
+
     try:
         r = requests.delete(url + '/' + index, data={})
     except Exception as e:
@@ -68,29 +69,44 @@ def delete_index(url, index):
 
     return r.status_code
 
-#XPOST 'elasticsearch-domain-endpoint/_snapshot/cs-automated/2017-snapshot/_restore' -d '{"indices": "my-index"}' -H '
 def restore_index(url, snapshot, index):
+    if index == 'all':
+        postdata = {}
+    else:
+        postdata = {'indices': index}
+
     try:
         r = requests.post(url + '/_snapshot/cs-automated/' + snapshot + '/_restore',
-                         data={'indices': index})
+                          data=postdata)
     except Exception as e:
         logger.error('Error: %s, response code: ', e, r.status_code)
 
     return r.status_code
 
+# options parser
 parser = OptionParser()
 parser.add_option('-u', '--url', type='string',
-                  help='Required. Endpoint url of the ES domain you wish to interact with.')
+                  help='Required. Endpoint url of the ES domain you wish to interact with.'
+                  'Format: https://some.url')
+
 parser.add_option('-l', '--list-snapshots', dest='snaplist', action='store_true', default=False,
-                  help='Standalone option, use to list available snapshots.')
+                  help='Standalone option, use to list available snapshots and indexes.')
+
 parser.add_option('-r', '--restore', dest='restore', action='store_true', default=False,
-                  help='Use with --snapshot to select a snapshot to restore.')
+                  help='Use with --snapshot [snapshot] and --index [index] to select'
+                  'a snapshot to restore.')
+
 parser.add_option('-s', '--snapshot-name', type='string',
                   help='Use with --restore to select a snapshot to restore.')
+
 parser.add_option('-i', '--index', type='string',
-                  help='Use with --restore and --snapshot to select an index to restore.')
+                  help='Use with --restore and --snapshot to select an index to restore.'
+                  'Note that index will first be deleted from the running cluster.'
+                  'If "all" is used, all indexes will be deleted/restored.')
+
 options, args = parser.parse_args()
 
+# validation of options
 if not options.url:
     logger.error("Error: --url [url] is a required option!")
     parser.print_help()
@@ -101,10 +117,12 @@ if not options.url.startswith("http"):
     parser.print_help()
     sys.exit(1)
 
+# verify we can connect
 testconn = test_connection(options.url)
 logger.info('\nElasticsearch cluster name: %s, version: %s\n',
             testconn['cluster_name'], testconn['version']['number'])
 
+# get snapshots and indexes
 if options.snaplist:
     logger.info('Listing up to the latest five snapshots:')
     snaps = list_snapshots(options.url)
