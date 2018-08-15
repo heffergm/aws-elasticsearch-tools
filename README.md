@@ -7,6 +7,8 @@ for hosted Elasticsearch domains.
 
 ### Usage
 
+* `pip3 install -r requirements.txt`
+
 * `aws-es-restore.py --list-snapshots --url [url]`: lists up to the last five available snapshots
 and the indexes stored in them.
 

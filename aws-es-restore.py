@@ -1,50 +1,55 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
-
-# require python 2.7
-if sys.version_info[0] != 2 or sys.version_info[1] < 7:
-    print("This script requires Python version 2.7")
-    sys.exit(1)
-
 import time
 import json
-import urllib2
 import requests
 import logging
 import logging.config
 from optparse import OptionParser
+from urllib.request import urlopen
 
-# logger
-logger = logging.getLogger(__name__)
-logging.config.dictConfig({
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
-        },
-    },
-    'handlers': {
-        'default': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['default'],
-            'level': 'INFO',
-            'propagate': True
-        }
-    }
-})
-
+from colorlog import ColoredFormatter
 
 # methods
+def get_log_handler(color):
+    formatter = ColoredFormatter(
+        "%(log_color)s%(levelname)-8s%(reset)s %(asctime)s %(white)s%(message)s",
+        datefmt='%H:%M:%S',
+        reset=True,
+        log_colors={
+            'DEBUG':    'cyan',
+            'INFO':     'green',
+            'WARNING':  'yellow',
+            'ERROR':    'red',
+            'CRITICAL': 'red',
+        }
+    ) if color else logging.Formatter("%(levelname)-8s %(asctime)s %(message)s",
+                                      datefmt="%H:%M:%S")
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+    return handler
+
+
+def setup_wait_logger(color=True):
+    logger = logging.getLogger('wait')
+    handler = get_log_handler(color)
+    handler.terminator = ''
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+
+def setup_default_logger(color=True):
+    logger = logging.getLogger('default')
+    logger.addHandler(get_log_handler(color))
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+
 def test_connection(url):
     try:
-        r = urllib2.urlopen(url).read()
+        r = urlopen(url).read()
     except Exception as e:
         logger.error('%s', e)
         sys.exit(1)
@@ -55,7 +60,7 @@ def test_connection(url):
 
 def list_snapshots(url, repository):
     try:
-        r = urllib2.urlopen(url + '/_snapshot/' + repository + '/_all').read()
+        r = urlopen(url + '/_snapshot/' + repository + '/_all').read()
     except Exception as e:
         logger.error('%s', e)
         sys.exit(1)
@@ -109,6 +114,9 @@ parser.add_option('--restore', dest='restore', action='store_true', default=Fals
 parser.add_option('--snapshot-name', type='string',
                   help='Use with --restore to select a snapshot to restore.')
 
+parser.add_option('--no-color', dest='color', action='store_false', default=True,
+                  help='Disable color logging.')
+
 parser.add_option('--snapshot-repository', type='string', default='cs-automated',
                   help='Optional: use with --restore to select a snapshot repository '
                   'other than the default of cs-automated.')
@@ -119,6 +127,7 @@ parser.add_option('--index', type='string',
                   'If "all" is used, all indexes will be deleted/restored.')
 
 options, args = parser.parse_args()
+logger = setup_default_logger(color=options.color)
 
 # validation of options
 if not options.url:
@@ -133,8 +142,8 @@ if not options.url.startswith("http"):
 
 # verify we can connect
 testconn = test_connection(options.url)
-logger.info('\nElasticsearch cluster name: %s, version: %s\n',
-            testconn['cluster_name'], testconn['version']['number'])
+logger.info('Cluster name: %s', testconn['cluster_name'])
+logger.info('Cluster version: %s', testconn['version']['number'])
 
 # get snapshots and indexes
 if options.snaplist:
@@ -156,7 +165,7 @@ if options.snaplist:
             for i in snaps['snapshots']:
                 if s == i['snapshot']:
                     indices = ", ".join(i['indices'])
-                    logger.info('\tSnapshot: %s\n\tIndexes: %s\n', s, ", ".join(i['indices']))
+                    logger.info('\n\tSnapshot: %s\n\tIndexes: %s\n', s, ", ".join(i['indices']))
     else:
         logger.error('Successfully queries the snapshot responsitory, '
                      'but no snapshots were found!')
@@ -170,21 +179,21 @@ if options.restore:
         parser.print_help()
         sys.exit(1)
 
-    logger.warn('WARNING: restoring an index necessitates the deletion of any existing '
-                'index with the same name.\nProceed? (any key to continue, CTRL-C to abort)')
-    proceed = raw_input()
+    logger.warning('WARNING: restoring an index necessitates the deletion of any existing '
+                   'index with the same name. Proceed? (any key to continue, CTRL-C to abort)')
+    proceed = input()
 
-    logger.info('Sending delete request for index %s.', options.index)
+    logger.info('Sending delete request for index(es) %s.', options.index)
     delete_resp = delete_index(options.url, options.index)
     logger.info('Delete index: %s, response status code: %s', options.index, delete_resp)
 
     if delete_resp == 200:
-        logger.info('\nSleeping to allow index deletion before continuing.\n')
+        logger.info('Sleeping to allow index deletion before continuing.')
         time.sleep(60)
 
-    logger.info('Sending restore request for index: %s, from snapshot: %s.',
+    logger.info('Sending restore request for index(es): %s, from snapshot: %s.',
                 options.index, options.snapshot_name)
     restore_resp = restore_index(options.url, options.snapshot_name,
                                  options.index, options.snapshot_repository)
-    logger.info('Restore index %s response status code: %s', options.index, restore_resp)
+    logger.info('Restore index(es): %s, response status code: %s', options.index, restore_resp)
     logger.info('Done.')
