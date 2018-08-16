@@ -217,9 +217,8 @@ if options.restore:
         sys.exit(1)
 
     logger.warning('WARNING: restoring an index necessitates the deletion '
-                   'of any existing index with the same name. Proceed? '
-                   '(any key to continue, CTRL-C to abort)')
-    proceed = input()
+                   'of any existing index with the same name.')
+    input('\t>>>>>>>> Any key to continue, CTRL-C to abort: ')
 
     logger.info('Sending delete request for index(es): %s.', options.index)
     delete_resp = delete_index(options.url, options.index)
