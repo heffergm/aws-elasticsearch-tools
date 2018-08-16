@@ -49,6 +49,7 @@ def setup_default_logger(color=True):
     logger.setLevel(logging.DEBUG)
     return logger
 
+
 def index_exists(url, index):
     indexes = index.split(',')
 
@@ -64,6 +65,7 @@ def index_exists(url, index):
             break
 
     return False
+
 
 def test_connection(url):
     try:
@@ -237,7 +239,7 @@ if options.restore:
             if (datetime.datetime.now() - started_at).seconds > wait_seconds:
                 sys.stderr.buffer.write(b'\n')
                 sys.stderr.flush()
-                raise Exception('Timed Out')
+                raise Exception('Timed out waiting for index deletion.')
         else:
             sys.stderr.buffer.write(b'\n')
             sys.stderr.flush()
