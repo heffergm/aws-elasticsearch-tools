@@ -5,6 +5,7 @@ import time
 import json
 import logging
 import logging.config
+import datetime
 from optparse import OptionParser
 
 import requests
@@ -48,6 +49,21 @@ def setup_default_logger(color=True):
     logger.setLevel(logging.DEBUG)
     return logger
 
+def index_exists(url, index):
+    indexes = index.split(',')
+
+    for i in indexes:
+        try:
+            r = requests.head(url + '/' + i)
+        except Exception as e:
+            logger.error('%s', e)
+            sys.exit(1)
+
+        if r.status_code == 200:
+            return True
+            break
+
+    return False
 
 def test_connection(url):
     try:
@@ -139,6 +155,7 @@ parser.add_option('--index', type='string',
 
 options, args = parser.parse_args()
 logger = setup_default_logger(color=options.color)
+wait_logger = setup_wait_logger(color=options.color)
 
 # validation of options
 if not options.url:
@@ -202,17 +219,28 @@ if options.restore:
                    '(any key to continue, CTRL-C to abort)')
     proceed = input()
 
-    logger.info('Sending delete request for index(es): %s.', options.index)
-    delete_resp = delete_index(options.url, options.index)
-    logger.info('Delete index: %s, response status code: %s',
-                options.index, delete_resp)
+    wait_logger.info('Waiting for deletion of index(es): %s.', options.index)
+    wait_seconds = 300
+    started_at = datetime.datetime.now()
 
-    if delete_resp == 200:
-        logger.info('Sleeping to allow index deletion before continuing.')
-        time.sleep(60)
-    else:
-        logger.warning('Sent delete index request and received response code: '
-                       '%s, continuing.', delete_resp)
+    while True:
+        exists = index_exists(options.url, options.index)
+        if exists:
+            sys.stderr.buffer.write(b'.')
+            sys.stderr.flush()
+            time.sleep(2)
+            if (datetime.datetime.now() - started_at).seconds > wait_seconds:
+                sys.stderr.buffer.write(b'\n')
+                sys.stderr.flush()
+                raise Exception('Timed Out')
+        else:
+            sys.stderr.buffer.write(b'\n')
+            sys.stderr.flush()
+            break
+
+    logger.info('Index(es): %s deleted, continuing.', options.index)
+    sys.stderr.buffer.write(b'\n')
+    sys.stderr.flush()
 
     logger.info('Sending restore request for index(es): %s from snapshot: %s.',
                 options.index, options.snapshot_name)
