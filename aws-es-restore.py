@@ -239,9 +239,6 @@ if options.restore:
             break
 
     logger.info('Index(es): %s deleted, continuing.', options.index)
-    sys.stderr.buffer.write(b'\n')
-    sys.stderr.flush()
-
     logger.info('Sending restore request for index(es): %s from snapshot: %s.',
                 options.index, options.snapshot_name)
     restore_resp = restore_index(options.url, options.snapshot_name,
