@@ -219,6 +219,11 @@ if options.restore:
                    '(any key to continue, CTRL-C to abort)')
     proceed = input()
 
+    logger.info('Sending delete request for index(es): %s.', options.index)
+    delete_resp = delete_index(options.url, options.index)
+    logger.info('Delete index: %s, response status code: %s',
+                options.index, delete_resp)
+
     wait_logger.info('Waiting for deletion of index(es): %s.', options.index)
     wait_seconds = 300
     started_at = datetime.datetime.now()
