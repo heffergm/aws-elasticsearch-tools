@@ -165,9 +165,9 @@ if not options.url:
     parser.print_help()
     sys.exit(1)
 
-if not options.url.startswith("http"):
-    logger.error("Error: --url [url], url must be in the format "
-                 "https://some.url.")
+if not options.url.startswith('http'):
+    logger.error('Error: --url [url], url must be in the format '
+                 'https://some.url.')
     parser.print_help()
     sys.exit(1)
 
